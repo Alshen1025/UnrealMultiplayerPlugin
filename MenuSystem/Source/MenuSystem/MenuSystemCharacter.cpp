@@ -10,13 +10,18 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "OnlineSubsystem.h"
+#include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSessionSettings.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // AMenuSystemCharacter
 
-AMenuSystemCharacter::AMenuSystemCharacter()
+AMenuSystemCharacter::AMenuSystemCharacter() :
+	//세션 생성 완료 델리게이트를 바인딩
+	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSesseionComplete))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -52,6 +57,20 @@ AMenuSystemCharacter::AMenuSystemCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	//OnlineSubsystem과 OnlineSessioninterface가져오기
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
+	if (OnlineSubsystem)
+	{
+		OnlineSessionInterface = OnlineSubsystem->GetSessionInterface();
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Blue,
+				FString::Printf(TEXT("FoundSubsystem %s"),
+					*OnlineSubsystem->GetSubsystemName().ToString())
+			);
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -89,6 +108,56 @@ void AMenuSystemCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+}
+
+void AMenuSystemCharacter::CreateGameSession()
+{
+	//존재하는 세션을 파괴 -> 새 세션을 만들 수 있음
+	if (!OnlineSessionInterface.IsValid()) return;
+
+	auto ExistingSession = OnlineSessionInterface->GetNamedSession(NAME_GameSession);
+	if (ExistingSession != nullptr)
+	{
+		OnlineSessionInterface->DestroySession(NAME_GameSession);
+	}
+
+	//새 세션 만들기
+	
+	//델리게이트에 연결
+	//세션 생성이 완료되면 CreateSessionCompleteDelegate에 바인딩 된 콜백 함수 호출
+	OnlineSessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
+
+	//세션 설정
+	TSharedPtr<FOnlineSessionSettings> SessionSetting = MakeShareable(new FOnlineSessionSettings());
+	SessionSetting->bIsLANMatch = false; //LAN인가
+	SessionSetting->NumPublicConnections = 4; //게임에서 가지는 플레이어 수
+	SessionSetting->bAllowJoinInProgress = true;//세션이 실행 중이면 다른 유저도 참여 가능한가
+	SessionSetting->bAllowJoinViaPresence = true; //Presence(상태 정보)를 통해 친구가 게임에 참여하는 것을 허용할지
+	SessionSetting->bShouldAdvertise = true; //스팀이 세션을 광고해 다른 유저가 참여가능
+	SessionSetting->bUsesPresence = true; //게임 세션이 스팀의 Presence 시스템을 사용해서 상세한 상태 정보를 표시할 것인가
+	SessionSetting->bUseLobbiesIfAvailable = true; //스팀 로비는 사용 bUsesPresence가 true면 true여야 함
+
+	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	OnlineSessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *SessionSetting);
+}
+
+void AMenuSystemCharacter::OnCreateSesseionComplete(FName SessionName, bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("create session: %s"), 
+				*SessionName.ToString()));
+		}
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Failed to create session!")));
+		}
 	}
 }
 
