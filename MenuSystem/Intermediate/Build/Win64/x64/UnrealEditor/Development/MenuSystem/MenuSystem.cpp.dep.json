@@ -1,0 +1,14 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\goseo\\desktop\\unrealmultiplayerplugin\\menusystem\\source\\menusystem\\menusystem.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\goseo\\desktop\\unrealmultiplayerplugin\\menusystem\\intermediate\\build\\win64\\x64\\menusystemeditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\goseo\\desktop\\unrealmultiplayerplugin\\menusystem\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\menusystem\\definitions.menusystem.h",
+            "c:\\users\\goseo\\desktop\\unrealmultiplayerplugin\\menusystem\\source\\menusystem\\menusystem.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

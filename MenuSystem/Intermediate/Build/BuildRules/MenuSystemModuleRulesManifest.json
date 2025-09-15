@@ -1,0 +1,8 @@
+{
+	"SourceFiles": [
+		"C:\\Users\\goseo\\Desktop\\UnrealMultiplayerPlugin\\MenuSystem\\Source\\MenuSystem\\MenuSystem.Build.cs",
+		"C:\\Users\\goseo\\Desktop\\UnrealMultiplayerPlugin\\MenuSystem\\Source\\MenuSystem.Target.cs",
+		"C:\\Users\\goseo\\Desktop\\UnrealMultiplayerPlugin\\MenuSystem\\Source\\MenuSystemEditor.Target.cs"
+	],
+	"EngineVersion": "5.5.4"
+}
