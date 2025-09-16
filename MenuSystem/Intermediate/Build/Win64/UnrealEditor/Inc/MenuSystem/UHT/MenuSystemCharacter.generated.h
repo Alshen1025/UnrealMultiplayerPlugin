@@ -15,6 +15,7 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 #define MENUSYSTEM_MenuSystemCharacter_generated_h
 
 #define FID_Users_goseo_Desktop_UnrealMultiplayerPlugin_MenuSystem_Source_MenuSystem_MenuSystemCharacter_h_23_RPC_WRAPPERS_NO_PURE_DECLS \
+	DECLARE_FUNCTION(execJoinGameSession); \
 	DECLARE_FUNCTION(execCreateGameSession);
 
 

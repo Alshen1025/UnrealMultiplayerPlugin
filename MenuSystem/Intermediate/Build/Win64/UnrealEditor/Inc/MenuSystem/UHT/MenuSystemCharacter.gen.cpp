@@ -49,12 +49,42 @@ DEFINE_FUNCTION(AMenuSystemCharacter::execCreateGameSession)
 }
 // End Class AMenuSystemCharacter Function CreateGameSession
 
+// Begin Class AMenuSystemCharacter Function JoinGameSession
+struct Z_Construct_UFunction_AMenuSystemCharacter_JoinGameSession_Statics
+{
+#if WITH_METADATA
+	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
+		{ "ModuleRelativePath", "MenuSystemCharacter.h" },
+	};
+#endif // WITH_METADATA
+	static const UECodeGen_Private::FFunctionParams FuncParams;
+};
+const UECodeGen_Private::FFunctionParams Z_Construct_UFunction_AMenuSystemCharacter_JoinGameSession_Statics::FuncParams = { (UObject*(*)())Z_Construct_UClass_AMenuSystemCharacter, nullptr, "JoinGameSession", nullptr, nullptr, nullptr, 0, 0, RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x04080401, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UFunction_AMenuSystemCharacter_JoinGameSession_Statics::Function_MetaDataParams), Z_Construct_UFunction_AMenuSystemCharacter_JoinGameSession_Statics::Function_MetaDataParams) };
+UFunction* Z_Construct_UFunction_AMenuSystemCharacter_JoinGameSession()
+{
+	static UFunction* ReturnFunction = nullptr;
+	if (!ReturnFunction)
+	{
+		UECodeGen_Private::ConstructUFunction(&ReturnFunction, Z_Construct_UFunction_AMenuSystemCharacter_JoinGameSession_Statics::FuncParams);
+	}
+	return ReturnFunction;
+}
+DEFINE_FUNCTION(AMenuSystemCharacter::execJoinGameSession)
+{
+	P_FINISH;
+	P_NATIVE_BEGIN;
+	P_THIS->JoinGameSession();
+	P_NATIVE_END;
+}
+// End Class AMenuSystemCharacter Function JoinGameSession
+
 // Begin Class AMenuSystemCharacter
 void AMenuSystemCharacter::StaticRegisterNativesAMenuSystemCharacter()
 {
 	UClass* Class = AMenuSystemCharacter::StaticClass();
 	static const FNameNativePtrPair Funcs[] = {
 		{ "CreateGameSession", &AMenuSystemCharacter::execCreateGameSession },
+		{ "JoinGameSession", &AMenuSystemCharacter::execJoinGameSession },
 	};
 	FNativeFunctionRegistrar::RegisterFunctions(Class, Funcs, UE_ARRAY_COUNT(Funcs));
 }
@@ -150,6 +180,7 @@ struct Z_Construct_UClass_AMenuSystemCharacter_Statics
 	static UObject* (*const DependentSingletons[])();
 	static constexpr FClassFunctionLinkInfo FuncInfo[] = {
 		{ &Z_Construct_UFunction_AMenuSystemCharacter_CreateGameSession, "CreateGameSession" }, // 1978873440
+		{ &Z_Construct_UFunction_AMenuSystemCharacter_JoinGameSession, "JoinGameSession" }, // 1263833466
 	};
 	static_assert(UE_ARRAY_COUNT(FuncInfo) < 2048);
 	static constexpr FCppClassTypeInfoStatic StaticCppClassTypeInfo = {
@@ -212,10 +243,10 @@ AMenuSystemCharacter::~AMenuSystemCharacter() {}
 struct Z_CompiledInDeferFile_FID_Users_goseo_Desktop_UnrealMultiplayerPlugin_MenuSystem_Source_MenuSystem_MenuSystemCharacter_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_AMenuSystemCharacter, AMenuSystemCharacter::StaticClass, TEXT("AMenuSystemCharacter"), &Z_Registration_Info_UClass_AMenuSystemCharacter, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(AMenuSystemCharacter), 3954869233U) },
+		{ Z_Construct_UClass_AMenuSystemCharacter, AMenuSystemCharacter::StaticClass, TEXT("AMenuSystemCharacter"), &Z_Registration_Info_UClass_AMenuSystemCharacter, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(AMenuSystemCharacter), 513062258U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_goseo_Desktop_UnrealMultiplayerPlugin_MenuSystem_Source_MenuSystem_MenuSystemCharacter_h_3021020669(TEXT("/Script/MenuSystem"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_goseo_Desktop_UnrealMultiplayerPlugin_MenuSystem_Source_MenuSystem_MenuSystemCharacter_h_1638534831(TEXT("/Script/MenuSystem"),
 	Z_CompiledInDeferFile_FID_Users_goseo_Desktop_UnrealMultiplayerPlugin_MenuSystem_Source_MenuSystem_MenuSystemCharacter_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_Users_goseo_Desktop_UnrealMultiplayerPlugin_MenuSystem_Source_MenuSystem_MenuSystemCharacter_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

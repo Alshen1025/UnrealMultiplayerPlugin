@@ -13,6 +13,7 @@
 #include "OnlineSubsystem.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "OnlineSessionSettings.h"
+#include <Online/OnlineSessionNames.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -21,7 +22,10 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 AMenuSystemCharacter::AMenuSystemCharacter() :
 	//세션 생성 완료 델리게이트를 바인딩
-	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSesseionComplete))
+	CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnCreateSessionComplete)),
+	//세션 탐색 완료 델리게이트 바인딩
+	FindSessionCompleteDelegate(FOnFindSessionsCompleteDelegate::CreateUObject(this, &ThisClass::OnFindSessionComplete)),
+	JoinSessionCompleteDelegate(FOnJoinSessionCompleteDelegate::CreateUObject(this, &ThisClass::OnJoinSessionComplete))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -137,12 +141,86 @@ void AMenuSystemCharacter::CreateGameSession()
 	SessionSetting->bShouldAdvertise = true; //스팀이 세션을 광고해 다른 유저가 참여가능
 	SessionSetting->bUsesPresence = true; //게임 세션이 스팀의 Presence 시스템을 사용해서 상세한 상태 정보를 표시할 것인가
 	SessionSetting->bUseLobbiesIfAvailable = true; //스팀 로비는 사용 bUsesPresence가 true면 true여야 함
-
+	SessionSetting->Set(FName("MatchType"), FString("FreeForAll"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	SessionSetting->Set(SEARCH_KEYWORDS, FString("SeonghyeonPresence"), EOnlineDataAdvertisementType::ViaOnlineService);
+	
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	OnlineSessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *SessionSetting);
 }
 
-void AMenuSystemCharacter::OnCreateSesseionComplete(FName SessionName, bool bWasSuccessful)
+void AMenuSystemCharacter::JoinGameSession()
+{
+	if (!OnlineSessionInterface.IsValid()) return;
+	OnlineSessionInterface->AddOnFindSessionsCompleteDelegate_Handle(FindSessionCompleteDelegate);
+	//게임 세션 찾기
+	SessionSearch = MakeShareable(new FOnlineSessionSearch);
+	SessionSearch->MaxSearchResults = 1000;
+	SessionSearch->bIsLanQuery = false;
+
+	//Unreal 5.5부터는 작동하지 않음
+	//SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+	//SEARCH_KEYWORDS는 게임식별 용으로
+	//QuerySettings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineComparisonOp::Equals);은 게임모드 찾기 용
+	SessionSearch->QuerySettings.Set(SEARCH_KEYWORDS, FString("SeonghyeonPresence"), EOnlineComparisonOp::Equals);
+	SessionSearch->QuerySettings.Set(FName("MatchType"), FString("FreeForAll"), EOnlineComparisonOp::Equals);
+
+	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	OnlineSessionInterface->FindSessions(*LocalPlayer->GetPreferredUniqueNetId(), SessionSearch.ToSharedRef());
+}
+
+void AMenuSystemCharacter::OnFindSessionComplete(bool bWasSuccessful)
+{
+	if (!OnlineSessionInterface.IsValid()) return;
+	for (auto Result : SessionSearch->SearchResults)
+	{
+		FString Id = Result.GetSessionIdStr();
+		FString User = Result.Session.OwningUserName;
+		FString MatchType;
+		Result.Session.SessionSettings.Get(FName("MatchType"), MatchType);
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Blue,
+				FString::Printf(TEXT("ID: %s, User: %s"), *Id, *User)	
+			);
+		}
+		if (MatchType == FString("FreeForAll"))
+		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Blue,
+					FString::Printf(TEXT("Join the Match Type: %s"), *MatchType)
+				);
+			}
+			OnlineSessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate);
+			const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+			OnlineSessionInterface->JoinSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, Result);
+
+		}
+	}
+}
+
+void AMenuSystemCharacter::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+	if (!OnlineSessionInterface.IsValid()) return;
+
+	FString Address;
+	if (OnlineSessionInterface->GetResolvedConnectString(NAME_GameSession, Address))
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Blue,
+				FString::Printf(TEXT("Connect string: %s"), *Address)
+			);
+		}
+		APlayerController* PlayerController = GetGameInstance()->GetFirstLocalPlayerController();
+		if (PlayerController)
+		{
+			PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
+		}
+	}
+}
+
+void AMenuSystemCharacter::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
 {
 	if (bWasSuccessful)
 	{
@@ -151,7 +229,13 @@ void AMenuSystemCharacter::OnCreateSesseionComplete(FName SessionName, bool bWas
 			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("create session: %s"), 
 				*SessionName.ToString()));
 		}
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel(FString("/Game/ThirdPerson/Maps/Lobby?listen"));
+		}
 	}
+
 	else
 	{
 		if (GEngine)
@@ -160,6 +244,8 @@ void AMenuSystemCharacter::OnCreateSesseionComplete(FName SessionName, bool bWas
 		}
 	}
 }
+
+
 
 void AMenuSystemCharacter::Move(const FInputActionValue& Value)
 {

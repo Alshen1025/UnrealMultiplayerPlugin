@@ -1,6 +1,7 @@
 {
 	"SourceFiles": [
 		"C:\\Users\\goseo\\Desktop\\UnrealMultiplayerPlugin\\MenuSystem\\Source\\MenuSystem\\MenuSystem.Build.cs",
+		"C:\\Users\\goseo\\Desktop\\UnrealMultiplayerPlugin\\MenuSystem\\Plugins\\MultiplayerSessions\\Source\\MultiplayerSessions\\MultiplayerSessions.Build.cs",
 		"C:\\Users\\goseo\\Desktop\\UnrealMultiplayerPlugin\\MenuSystem\\Source\\MenuSystem.Target.cs",
 		"C:\\Users\\goseo\\Desktop\\UnrealMultiplayerPlugin\\MenuSystem\\Source\\MenuSystemEditor.Target.cs"
 	],
